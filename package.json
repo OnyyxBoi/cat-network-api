@@ -1,0 +1,13 @@
+{
+  "name": "cat-network-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/OnyyxBoi/cat-network-api.git",
+  "author": "TeoL <teo.ladouche@hotmail.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
