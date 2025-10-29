@@ -17,12 +17,13 @@ services:
     container_name: postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: appuser
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: appdb
+      POSTGRES_DB: cat_network_db
     ports:
       - "5432:5432"
     volumes:
+      - ./postgresql-init:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
