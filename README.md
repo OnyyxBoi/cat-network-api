@@ -122,9 +122,19 @@ Nous avons utilisé principalement des références entre documents plutôt que 
 **PostgreSQL**
 
 ```sql
--- Exemple de requête avec jointure et agrégat
+SELECT v.id AS vet_id,
+           v.pseudonym,
+           DATE(a.date)::text AS appt_day,
+           COUNT(*)::int AS appts
+    FROM appointments a
+    JOIN users v ON v.id = a.veterinarian
+    WHERE v.id = $1
+    GROUP BY v.id, v.pseudonym, DATE(a.date)
+    HAVING COUNT(*) >= $2
+    ORDER BY appt_day DESC, appts DESC
 ```
 
+#### Aggrégat
 **MongoDB**
 
 Pipeline pour compter réactions et commentaires par post
