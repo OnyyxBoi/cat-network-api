@@ -2,6 +2,13 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { uuidv4 } from "../utils/generateID.js";
 import {getPostsAggregated, getPostWithCommentsTree, getTopPostsByReactions, getPopularPosts} from "../mongoPipelines/postsPipelines.js";
+import { getUser } from "../db/users.js";
+interface User {
+  id: number;
+  name: string;
+  pseudonym: string;
+  email: string;
+}
 
 export const postsRouter = Router();
 
@@ -96,13 +103,30 @@ export function initPosts(postsCollection: any, commentsCollection: any, reactio
     post._id = post._id || uuidv4();
     post.createdAt = new Date();
     post.updatedAt = new Date();
+  
     try {
+      const user = await getUser(post.userId);
+  
+      if (!user) {
+        return res.status(404).json({ error: "Utilisateur non trouvé" });
+      }
+  
+      post.user = {
+        id: user.id,
+        name: user.name,
+        pseudonym: user.pseudonym,
+        email: user.email,
+      };
+  
       const result = await postsCollection.insertOne(post);
       res.status(201).json(result);
+  
     } catch (err) {
-      res.status(500).json({ error: err });
+      console.error("Erreur lors de la création du post :", err);
+      res.status(500).json({ error: "Erreur serveur" });
     }
   });
+
 
   // update post
   postsRouter.put("/:id", async (req: Request, res: Response) => {

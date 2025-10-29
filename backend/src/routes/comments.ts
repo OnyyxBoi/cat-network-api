@@ -1,7 +1,13 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { uuidv4 } from "../utils/generateID.js";
-
+import { getUser } from "../db/users.js";
+interface User {
+  id: number;
+  name: string;
+  pseudonym: string;
+  email: string;
+}
 export const commentsRouter = Router();
 
 export function initComments(commentsCollection: any) {
@@ -10,6 +16,14 @@ export function initComments(commentsCollection: any) {
     const comment = req.body;
     comment._id = comment._id || uuidv4();
     comment.createdAt = new Date();
+    const user = await getUser(comment.userId);
+
+    comment.user = {
+      id: user.id,
+      name: user.name,
+      pseudonym: user.pseudonym,
+      email: user.email,
+    };
 
     try {
       const result = await commentsCollection.insertOne(comment);
