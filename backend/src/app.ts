@@ -5,6 +5,11 @@ import { MongoClient } from "mongodb";
 import { initPosts } from "./routes/posts.js";
 import { initComments } from "./routes/comments.js";
 import { initReactions } from "./routes/reactions.js";
+import users from "./routes/users.js";
+import breeds from "./routes/breeds.js";
+import clinics from "./routes/clinics.js";
+import cats from "./routes/cats.js";
+import appointments from "./routes/appointments.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,12 +45,22 @@ async function startServer() {
       res.json({ ok: true, service: "backend", time: new Date().toISOString() });
     });
 
+  } catch (err) {
+    console.error("Failed to connect to MongoDB", err);
+  }
+  try {
+    app.use("/api/users", users);
+    app.use("/api/breeds", breeds);
+    app.use("/api/clinics", clinics);
+    app.use("/api/cats", cats);
+    app.use("/api/appointments", appointments);
+
     // Start server
     app.listen(PORT, () => {
       console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
-  } catch (err) {
-    console.error("Failed to connect to MongoDB", err);
+  } catch (error) {
+    console.error("Failed to connect to PostgreSQL", error);
   }
 }
 
