@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "app.ts",
   "license": "MIT",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "tsx watch src/app.ts",
