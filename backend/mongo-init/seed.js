@@ -3,8 +3,8 @@ db = db.getSiblingDB("socialdb");
 const now = new Date();
 
 // IDs fixes
-const user1Id = "11111111-1111-1111-1111-111111111111";
-const user2Id = "22222222-2222-2222-2222-222222222222";
+const user1Id = "1"; // similaires à ceux dans la db postgres
+const user2Id = "2";
 
 const post1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const post2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
