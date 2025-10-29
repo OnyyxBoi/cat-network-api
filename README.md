@@ -15,19 +15,80 @@ Notre application est un réseau social de partage de contenu pour les amateurs 
 **MCD (Modèle Conceptuel de Données)**
 
 ```
-// Insérer capture d'écran du MCD
+    images_rendu\mcd.png
 ```
 
 **MLD (Modèle Logique de Données)**
 
 ```
-// Insérer capture d'écran du MLD
+    images_rendu\mld.png
 ```
 
 **MPD (Modèle Physique de Données)**
 
 ```sql
--- Insérer script SQL de création des tables
+CREATE SCHEMA IF NOT EXISTS cat_network;
+SET search_path = cat_network, public;
+
+CREATE TABLE users (
+  id               integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name             text        NOT NULL,
+  first_name       text        NOT NULL,
+  pseudonym        text        NOT NULL UNIQUE,
+  age              integer     CHECK (age BETWEEN 0 AND 150),
+  email            text        NOT NULL UNIQUE,
+  password         text        NOT NULL,
+  is_owner         boolean     NOT NULL DEFAULT false,
+  is_veterinarian  boolean     NOT NULL DEFAULT false,
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE breeds (
+  id     integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name   text NOT NULL UNIQUE
+);
+
+CREATE TABLE clinics (
+  id         integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name       text        NOT NULL,
+  address    text        NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE clinic_veterinarians (
+  clinic_id integer NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
+  vet_id    integer NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+  PRIMARY KEY (clinic_id, vet_id)
+);
+
+CREATE TABLE cats (
+  id          integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name        text        NOT NULL,
+  breed       integer     REFERENCES breeds(id),
+  owner       integer     NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  age         integer     CHECK (age BETWEEN 0 AND 40),
+  weight      numeric(5,2) CHECK (weight > 0),
+  main_clinic integer     REFERENCES clinics(id),
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX ON cats (owner);
+CREATE INDEX ON cats (breed);
+CREATE INDEX ON cats (main_clinic);
+
+CREATE TABLE appointments (
+  id            integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  cat           integer NOT NULL REFERENCES cats(id)   ON DELETE CASCADE,
+  veterinarian  integer NOT NULL REFERENCES users(id),
+  date          timestamptz NOT NULL,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (veterinarian, date)
+);
+
+CREATE INDEX ON appointments (cat);
+CREATE INDEX ON appointments (veterinarian);
+CREATE INDEX ON appointments (date);
+
 ```
 
 ### 3. Architecture MongoDB
@@ -109,6 +170,22 @@ Pipeline pour compter réactions et commentaires par post
 Pour cette partie, vous devez effectuer des recherches afin d'argumenter vos réponses.
 
 - **PostgreSQL** : Méthode proposée (pg_dump, sauvegarde continue, etc.)
+
+pg_dump permet d'effectuer des sauvegardes régulières en exportant la base sous forme d’un script SQL ou d’un archive. 
+
+    - https://www.percona.com/blog/postgresql-backup-strategy-enterprise-grade-environment
+    - https://www.postgresql.org/docs/current/backup.html
+
 - **MongoDB** : Méthode proposée (mongodump, replica set, etc.)
+Il est possible d'utiliser mongodump et la mettre en place d’un replica set. Mongodump permet de créer des fichiers de sauvegarde régulièrement contenant les collections ce qui rend les données facilement exportables et restaurables. --oplog peut être utilisé afin de prendre également les opérations du journal du replica set ce qui permet d’obtenir un instantané de la base même si des écritures ont lieu pendant la sauvegarde. Pour les environnements critiques ou les bases conséquentes, cette méthode peut être complétée avec des snapshots système ou des sauvegardes au niveau des volumes, garantissant une protection supplémentaire et la possibilité de restaurer rapidement un état complet de la base
+
+    - https://www.percona.com/blog/mongodb-backup-best-practices/
+    - https://www.mongodb.com/docs/database-tools/mongodump/
+    - https://www.mongodb.com/docs/manual/tutorial/backup-and-restore-tools/
+    - https://www.mongodb.com/community/forums/t/mongodb-replica-set-backups-recovery/268877
+
 - **Fréquence** : Complète, incrémentale, différentielle
+
 - **Restauration** : Procédure en cas de perte de données
+
+Il suffit de restaurer le dernier dump
