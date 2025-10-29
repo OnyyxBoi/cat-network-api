@@ -45,7 +45,7 @@ export function initReactions(reactionsCollection: any) {
   // update reaction
   reactionsRouter.put("/:id", async (req: Request, res: Response) => {
     try {
-      const update = { ...req.body, createdAt: new Date() }; // createdAt ou updatedAt selon ton choix
+      const update = { ...req.body, createdAt: new Date() };
       const result = await reactionsCollection.updateOne(
         { _id: req.params.id },
         { $set: update }
